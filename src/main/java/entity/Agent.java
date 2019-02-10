@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Agent {
-    private String agentBreed;
+    private AgentBreed agentBreed;
     private String policyId;
     private int age;
     private int socialGrade;
