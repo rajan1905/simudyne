@@ -5,7 +5,6 @@ import entity.AgentBreed;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 
@@ -30,7 +29,6 @@ public class CsvReader implements Runnable {
                     continue;
                 }
                 Agent agent = getAgentFromRecord(scanner.nextLine());
-                System.out.println(agent);
                 engineQueue.put(agent);
             }
         } catch (InterruptedException e) {
@@ -49,9 +47,9 @@ public class CsvReader implements Runnable {
         agent.setAge(Integer.parseInt(agentString[2].trim()));
         agent.setSocialGrade(Integer.parseInt(agentString[3].trim()));
         agent.setPaymentAtPurchase(Integer.parseInt(agentString[4].trim()));
-        agent.setAttributeBrand(Float.parseFloat(agentString[5].trim()));
-        agent.setAttributePrice(Float.parseFloat(agentString[6].trim()));
-        agent.setAttributePromotions(Float.parseFloat(agentString[7].trim()));
+        agent.setAttributeBrand(Double.parseDouble(agentString[5].trim()));
+        agent.setAttributePrice(Double.parseDouble(agentString[6].trim()));
+        agent.setAttributePromotions(Double.parseDouble(agentString[7].trim()));
         agent.setAutoRenew(agentString[8].trim().equals("0")?false:true);
         agent.setInertiaForSwitch(Integer.parseInt(agentString[9].trim()));
 

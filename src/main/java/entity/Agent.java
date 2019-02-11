@@ -1,6 +1,5 @@
 package entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,9 +11,32 @@ public class Agent {
     private int age;
     private int socialGrade;
     private int paymentAtPurchase;
-    private float attributeBrand;
-    private float attributePrice;
-    private float attributePromotions;
+    private double attributeBrand;
+    private double attributePrice;
+    private double attributePromotions;
     private boolean autoRenew;
     private int inertiaForSwitch;
+
+    @Override
+    public Agent clone(){
+        Agent agentForYear = new Agent();
+        agentForYear.agentBreed = agentBreed;
+        agentForYear.policyId = policyId;
+        agentForYear.age = age;
+        agentForYear.socialGrade = socialGrade;
+        agentForYear.paymentAtPurchase = paymentAtPurchase;
+        agentForYear.attributeBrand = attributeBrand;
+        agentForYear.attributePrice = attributePrice;
+        agentForYear.attributePromotions = attributePromotions;
+        agentForYear.autoRenew = autoRenew;
+        agentForYear.inertiaForSwitch = inertiaForSwitch;
+
+        return agentForYear;
+    }
+
+    @Override
+    public String toString(){
+        return "Agent with policy id : "+policyId+ " belongs to breed : "+agentBreed.name();
+    }
+
 }
