@@ -4,26 +4,27 @@ import entity.Agent;
 import entity.AgentBreed;
 import entity.AgentYearResult;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Getter
+@Setter
 public class ModelSimulatingEngine {
     private BlockingQueue<Agent> agentInputQueue;
     private double brand_factor;
     private ThreadPoolExecutor processingPool;
     private BlockingQueue<Map<Agent,AgentSimulationResult>> outputQueue;
     private Map<Agent,AgentSimulationResult> results;
-    private boolean inputFeedCompleted;
+    private long agentsReceived;
 
     public ModelSimulatingEngine(BlockingQueue<Map<Agent,AgentSimulationResult>> outputQueue){
-        agentInputQueue = new ArrayBlockingQueue<>(20);
+        agentInputQueue = new ArrayBlockingQueue<>(40);
         processingPool = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Integer.MAX_VALUE,
                 60L, TimeUnit.SECONDS,
                 new SynchronousQueue<Runnable>());
@@ -37,18 +38,17 @@ public class ModelSimulatingEngine {
     }
 
     public void start() throws InterruptedException, TimeoutException, ExecutionException {
-        List<CompletableFuture<Void>> allTasks = new ArrayList<>();
-        while(true && !isInputFeedCompleted()){
+        while (true) {
             Agent agent = agentInputQueue.take();
             results.put(agent, new AgentSimulationResult());
             Future task = processingPool.submit(new ProcessAgent(brand_factor,
                     agent, results.get(agent)));
-            task.get(1, TimeUnit.SECONDS);
+            task.get();
+            if(processingPool.getCompletedTaskCount() == agentsReceived) break;
         }
 
         // If we are here it means input feed is done. So, let's send everything to Statistics module
         // Check nothing executing in thread Pool and post results further
-
         System.out.println(results.size());
         outputQueue.put(results);
     }
@@ -97,5 +97,4 @@ public class ModelSimulatingEngine {
     public boolean isQueueProcessed(){
         return agentInputQueue.isEmpty() ? true : false;
     }
-    public void setInputFeedCompleted(){inputFeedCompleted = true;}
 }

@@ -22,6 +22,7 @@ public class CsvReader implements Runnable, AgentReader {
     }
 
     public void processInput(){
+        long count = 0;
         try (Scanner scanner = new Scanner(inputFile);) {
             while (scanner.hasNextLine()) {
                 if(escapeHeader){
@@ -31,19 +32,19 @@ public class CsvReader implements Runnable, AgentReader {
                 }
                 Agent agent = getAgentFromRecord(scanner.nextLine());
                 engine.getAgentInputQueue().put(agent);
+                count++;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-        signalEngineOnCompletion();
+        tellEngineAboutAgentCreated(count);
     }
 
     @Override
-    public void signalEngineOnCompletion() {
-        engine.setInputFeedCompleted();
+    public void tellEngineAboutAgentCreated(long count) {
+        engine.setAgentsReceived(count);
     }
 
     private Agent getAgentFromRecord(String line) {
