@@ -82,12 +82,10 @@ public class ModelSimulatingEngine {
                 if((agent.getAgentBreed() == AgentBreed.BREED_C) &&
                         (affinity < (agent.getSocialGrade() * agent.getAttributeBrand()))){
                     agentForYear.setAgentBreed(AgentBreed.BREED_NC);
-                    agent.setAgentBreed(AgentBreed.BREED_NC);
                 }
                 else if((agent.getAgentBreed() == AgentBreed.BREED_NC) &&
                         (affinity < (agent.getSocialGrade() * agent.getAttributeBrand() * brandFactor))){
                     agentForYear.setAgentBreed(AgentBreed.BREED_C);
-                    agent.setAgentBreed(AgentBreed.BREED_C);
                 }
                 results.addResultForYear(year, agentForYear);
             }
