@@ -2,42 +2,55 @@ package engine;
 
 import entity.Agent;
 import entity.AgentBreed;
+import entity.AgentYearResult;
 import lombok.Getter;
 
-import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Getter
 public class ModelSimulatingEngine {
     private BlockingQueue<Agent> agentInputQueue;
     private double brand_factor;
-    private ExecutorService processingPool;
-    private BlockingQueue<AgentYearResult> outputQueue;
+    private ThreadPoolExecutor processingPool;
+    private BlockingQueue<Map<Agent,AgentSimulationResult>> outputQueue;
     private Map<Agent,AgentSimulationResult> results;
+    private boolean inputFeedCompleted;
 
-    public ModelSimulatingEngine(BlockingQueue<AgentYearResult> outputQueue){
+    public ModelSimulatingEngine(BlockingQueue<Map<Agent,AgentSimulationResult>> outputQueue){
         agentInputQueue = new ArrayBlockingQueue<>(20);
-        processingPool = Executors.newCachedThreadPool();
+        processingPool = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Integer.MAX_VALUE,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>());
         brand_factor = 0.1 + new Random().nextDouble()*(2.8);
         results = new ConcurrentHashMap<>();
         this.outputQueue = outputQueue;
     }
 
     private void processAgent(Agent agent) throws InterruptedException, ExecutionException, TimeoutException {
-        results.put(agent, new AgentSimulationResult());
-        Future task = processingPool.submit(new ProcessAgent(brand_factor,
-                agent, results.get(agent)));
-        task.get();
-        outputQueue.put(new AgentYearResult(agent, results.get(agent)));
+
     }
 
-    public void startProcessing() throws InterruptedException, TimeoutException, ExecutionException {
-        while(true){
-            processAgent(agentInputQueue.take());
+    public void start() throws InterruptedException, TimeoutException, ExecutionException {
+        List<CompletableFuture<Void>> allTasks = new ArrayList<>();
+        while(true && !isInputFeedCompleted()){
+            Agent agent = agentInputQueue.take();
+            results.put(agent, new AgentSimulationResult());
+            Future task = processingPool.submit(new ProcessAgent(brand_factor,
+                    agent, results.get(agent)));
+            task.get(1, TimeUnit.SECONDS);
         }
+
+        // If we are here it means input feed is done. So, let's send everything to Statistics module
+        // Check nothing executing in thread Pool and post results further
+
+        System.out.println(results.size());
+        outputQueue.put(results);
     }
 
     class ProcessAgent implements Runnable{
@@ -84,4 +97,5 @@ public class ModelSimulatingEngine {
     public boolean isQueueProcessed(){
         return agentInputQueue.isEmpty() ? true : false;
     }
+    public void setInputFeedCompleted(){inputFeedCompleted = true;}
 }

@@ -1,5 +1,6 @@
-package engine;
+package entity;
 
+import engine.AgentSimulationResult;
 import entity.Agent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

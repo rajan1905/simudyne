@@ -36,7 +36,7 @@ public class Agent {
 
     @Override
     public String toString(){
-        return "Agent with policy id : "+policyId+ " belongs to breed : "+agentBreed.name();
+        return "[ Policy id : "+policyId+ ", AgentBreed: "+agentBreed.name()+" ]";
     }
 
 }

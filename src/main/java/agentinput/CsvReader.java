@@ -1,5 +1,6 @@
-package csv;
+package agentinput;
 
+import engine.ModelSimulatingEngine;
 import entity.Agent;
 import entity.AgentBreed;
 
@@ -8,19 +9,19 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.concurrent.BlockingQueue;
 
-public class CsvReader implements Runnable {
+public class CsvReader implements Runnable, AgentReader {
     private static final String COMMA_DELIMITER = ",";
-    BlockingQueue<Agent> engineQueue;
+    ModelSimulatingEngine engine;
     File inputFile;
     private boolean escapeHeader = true;
 
     public CsvReader(File inputFile,
-                     BlockingQueue<Agent> engineQueue){
+                     ModelSimulatingEngine engine){
         this.inputFile = inputFile;
-        this.engineQueue = engineQueue;
+        this.engine = engine;
     }
 
-    public void processCSV(){
+    public void processInput(){
         try (Scanner scanner = new Scanner(inputFile);) {
             while (scanner.hasNextLine()) {
                 if(escapeHeader){
@@ -29,13 +30,20 @@ public class CsvReader implements Runnable {
                     continue;
                 }
                 Agent agent = getAgentFromRecord(scanner.nextLine());
-                engineQueue.put(agent);
+                engine.getAgentInputQueue().put(agent);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        signalEngineOnCompletion();
+    }
+
+    @Override
+    public void signalEngineOnCompletion() {
+        engine.setInputFeedCompleted();
     }
 
     private Agent getAgentFromRecord(String line) {
@@ -58,6 +66,6 @@ public class CsvReader implements Runnable {
 
     @Override
     public void run() {
-        processCSV();
+        processInput();
     }
 }

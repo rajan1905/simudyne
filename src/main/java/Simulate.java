@@ -1,4 +1,4 @@
-import csv.CsvReader;
+import agentinput.CsvReader;
 import engine.ModelSimulatingEngine;
 import engine.Statistics;
 import entity.Agent;
@@ -14,13 +14,13 @@ public class Simulate {
         final File csvFile = new File(classLoader.getResource("csv/SimudynePlatformTestData.csv").getFile());
 
         Statistics statistics = new Statistics();
-        ModelSimulatingEngine engine = new ModelSimulatingEngine(statistics.getQueue());
         new Thread(statistics).start();
 
-        BlockingQueue<Agent> modelProcessingEngineQueue = engine.getAgentInputQueue();
-        new Thread(new CsvReader(csvFile , modelProcessingEngineQueue)).start();
+        ModelSimulatingEngine engine = new ModelSimulatingEngine(statistics.getQueue());
 
-        engine.startProcessing();
+        new Thread(new CsvReader(csvFile , engine)).start();
+
+        engine.start();
 
     }
 }
