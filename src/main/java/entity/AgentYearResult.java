@@ -1,13 +1,28 @@
 package entity;
 
-import engine.AgentSimulationResult;
-import entity.Agent;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
 public class AgentYearResult {
-    private Agent agent;
-    private AgentSimulationResult agentSimulationResult;
+    private int breedCLost;
+    private int breedCGained;
+    private int breedCRegained;
+
+    public void breedCLost(){
+        breedCLost++;
+    }
+
+    public void breedCGained(){
+        breedCGained++;
+    }
+
+    public void breedCRegained(){
+        breedCRegained++;
+    }
+
+    @Override
+    public String toString(){
+        return " [ BreedC Gained : " +breedCGained + " , BreedCLost : " + breedCLost +
+                " , BreedCRegained : "+breedCRegained + " ]";
+    }
 }

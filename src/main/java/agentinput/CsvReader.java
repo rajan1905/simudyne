@@ -7,7 +7,6 @@ import entity.AgentBreed;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.util.concurrent.BlockingQueue;
 
 public class CsvReader implements Runnable, AgentReader {
     private static final String COMMA_DELIMITER = ",";

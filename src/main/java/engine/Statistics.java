@@ -2,49 +2,37 @@ package engine;
 
 import entity.Agent;
 import entity.AgentBreed;
-import entity.AgentYearResult;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.stream.IntStream;
 
 @Getter
 public class Statistics implements Runnable {
-    private BlockingQueue<Map<Agent,AgentSimulationResult>> queue;
+    private Map<Agent,AgentSimulationResult> processedResults;
     private List<Agent> breedCAgents;
     private List<Agent> breedNCAgents;
 
-    public Statistics(){
-        queue = new ArrayBlockingQueue<>(20);
+    public Statistics(Map<Agent,AgentSimulationResult> processedResults){
+        this.processedResults = processedResults;
         breedNCAgents = new ArrayList<>();
         breedCAgents = new ArrayList<>();
     }
 
     @Override
     public void run() {
-        while(true){
-            try {
-                Map<Agent,AgentSimulationResult> results = queue.take();
-                Iterator<Agent> iterator = results.keySet().iterator();
-
-                while(iterator.hasNext()){
-                    Agent agent = iterator.next();
-                    printModelForEachAgent(agent, results.get(agent));
-                }
-                printAgentBreed(breedCAgents, AgentBreed.BREED_C);
-                printAgentBreed(breedNCAgents, AgentBreed.BREED_NC);
-
-                calculateLostGainedRegainedForAgentBreedC(breedCAgents);
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            Iterator<Agent> iterator = processedResults.keySet().iterator();
+            while(iterator.hasNext()){
+                Agent agent = iterator.next();
+                printModelForEachAgent(agent, processedResults.get(agent));
+                printLostGainedRegainedForAgentBreedC(processedResults.get(agent));
             }
-        }
+            printAgentBreed(breedCAgents, AgentBreed.BREED_C);
+            printAgentBreed(breedNCAgents, AgentBreed.BREED_NC);
+
     }
 
     private void printModelForEachAgent(Agent agent, AgentSimulationResult result){
@@ -76,8 +64,9 @@ public class Statistics implements Runnable {
 
     }
 
-    private void calculateLostGainedRegainedForAgentBreedC(List<Agent> agents){
-
+    private void printLostGainedRegainedForAgentBreedC(AgentSimulationResult agentSimulationResult){
+        System.out.println("-----------------------------------------------------\n");
+        System.out.println(agentSimulationResult.getAgentYearResult());
     }
 
 }

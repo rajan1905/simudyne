@@ -1,6 +1,6 @@
 package agentinput;
 
 public interface AgentReader {
-    public void processInput();
-    public void tellEngineAboutAgentCreated(long count);
+    void processInput();
+    void tellEngineAboutAgentCreated(long count);
 }
