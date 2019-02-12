@@ -50,7 +50,7 @@ public class CsvReader implements Runnable, AgentReader {
         Agent agent = new Agent();
         String[] agentString = line.split(COMMA_DELIMITER);
 
-        agent.setAgentBreed(agentString[0].equals("BREED_C")? AgentBreed.BREED_C:AgentBreed.BREED_NC);
+        agent.setAgentBreed(agentString[0].toUpperCase().equals("BREED_C")? AgentBreed.BREED_C:AgentBreed.BREED_NC);
         agent.setPolicyId(agentString[1].trim());
         agent.setAge(Integer.parseInt(agentString[2].trim()));
         agent.setSocialGrade(Integer.parseInt(agentString[3].trim()));

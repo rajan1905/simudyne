@@ -20,9 +20,9 @@ public class ModelSimulatingEngine {
     private long agentsReceived;
 
     public ModelSimulatingEngine(){
-        agentInputQueue = new ArrayBlockingQueue<>(40);
+        agentInputQueue = new ArrayBlockingQueue<>(20);
         processingPool = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS,
+                10L, TimeUnit.SECONDS,
                 new SynchronousQueue<Runnable>());
         brand_factor = 0.1 + new Random().nextDouble()*(2.8);
         results = new ConcurrentHashMap<>();
@@ -48,6 +48,9 @@ public class ModelSimulatingEngine {
         private Agent agent;
         private AgentSimulationResult results;
         private Random random;
+        private boolean breedCLost;
+        private boolean breedCGained;
+        private boolean wasBreedCLostInPast;
 
         public ProcessAgent(double brandFactor,
                             Agent agent,
@@ -65,34 +68,38 @@ public class ModelSimulatingEngine {
 
         private void processForYear(int year){
             Agent agentForYear = agent.clone();
-            boolean breedCLost = false;
-            boolean breedCGained = false;
 
             if(!agent.isAutoRenew()){
-                agentForYear.setAge(agentForYear.getAge() + 1);
 
-                double affinity = (agent.getPaymentAtPurchase()/agent.getAttributePrice())+
-                        (random.nextFloat() * agent.getAttributePromotions() * agent.getInertiaForSwitch());
-                if((agent.getAgentBreed() == AgentBreed.BREED_C) &&
-                        (affinity < (agent.getSocialGrade() * agent.getAttributeBrand()))){
+                double affinity = (agentForYear.getPaymentAtPurchase()/agentForYear.getAttributePrice())+
+                        (random.nextFloat() * agentForYear.getAttributePromotions() * agentForYear.getInertiaForSwitch());
+                if((agentForYear.getAgentBreed() == AgentBreed.BREED_C) &&
+                        (affinity < (agentForYear.getSocialGrade() * agentForYear.getAttributeBrand()))){
                     if(agentForYear.getAgentBreed() != AgentBreed.BREED_NC){
                         breedCLost = true;
+                        wasBreedCLostInPast = true;
                     }
                     agentForYear.setAgentBreed(AgentBreed.BREED_NC);
-                    agent.setAgentBreed(AgentBreed.BREED_NC);
                 }
-                else if((agent.getAgentBreed() == AgentBreed.BREED_NC) &&
-                        (affinity < (agent.getSocialGrade() * agent.getAttributeBrand() * brandFactor))){
+                else if((agentForYear.getAgentBreed() == AgentBreed.BREED_NC) &&
+                        (affinity < (agentForYear.getSocialGrade() * agentForYear.getAttributeBrand() * brandFactor))){
                     if(agentForYear.getAgentBreed() != AgentBreed.BREED_C){
                         breedCGained = true;
                     }
                     agentForYear.setAgentBreed(AgentBreed.BREED_C);
-                    agent.setAgentBreed(AgentBreed.BREED_C);
                 }
                 results.addResultForYear(year, agentForYear);
                 if(breedCLost) { results.getAgentYearResult().breedCLost(); }
                 if(breedCGained) { results.getAgentYearResult().breedCGained(); }
-                if(breedCLost && breedCGained) { results.getAgentYearResult().breedCRegained(); }
+                if(wasBreedCLostInPast && breedCGained) {
+                    results.getAgentYearResult().breedCRegained();
+                    breedCLost = false;
+                    wasBreedCLostInPast = false;
+                }
+                breedCLost = false;
+                breedCGained = false;
+                agent.setAge(agentForYear.getAge() + 1);
+                agent.setAgentBreed(agentForYear.getAgentBreed());
             }
         }
     }
